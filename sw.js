@@ -1,7 +1,7 @@
 const CACHE_NAME = 'todo-app-v1.3';
 const urlsToCache = [
   './',
-  './index-pwa.html',
+  './index.html',
   './styles.css',
   './manifest.json',
   './icons/icon-72x72.png',
@@ -135,3 +135,4 @@ function doBackgroundSync() {
   // 這裡可以添加背景同步邏輯
   console.log('Background sync completed');
 }
+
