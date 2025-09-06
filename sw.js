@@ -124,7 +124,7 @@ self.addEventListener('notificationclick', (event) => {
 
   if (event.action === 'explore') {
     event.waitUntil(
-      clients.openWindow('./index.html')
+      clients.openWindow('index.html')
     );
   }
 });
@@ -134,6 +134,7 @@ function doBackgroundSync() {
   // 這裡可以添加背景同步邏輯
   console.log('Background sync completed');
 }
+
 
 
 
