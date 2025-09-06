@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA 測試頁面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 PWA 功能測試</h1>
+        
+        <div id="status"></div>
+        
+        <h2>📱 測試項目</h2>
+        <ul>
+            <li>✅ Service Worker 註冊</li>
+            <li>✅ Manifest 檔案載入</li>
+            <li>✅ 圖示檔案檢查</li>
+            <li>✅ 安裝提示功能</li>
+            <li>✅ 離線功能</li>
+        </ul>
+        
+        <h2>🚀 快速連結</h2>
+        <button class="btn" onclick="window.open('index-pwa.html', '_blank')">開啟 PWA 版本</button>
+        <button class="btn" onclick="window.open('index-simple.html', '_blank')">開啟簡化版本</button>
+        <button class="btn" onclick="window.open('test-simple.html', '_blank')">開啟測試版本</button>
+        
+        <h2>📋 使用說明</h2>
+        <p>1. 點擊「開啟 PWA 版本」來測試完整的 PWA 功能</p>
+        <p>2. 在手機上開啟時，應該會看到「安裝」提示</p>
+        <p>3. 安裝後可以離線使用</p>
+        <p>4. 支援滑動手勢和觸控操作</p>
+    </div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        
+        // 檢查 PWA 功能
+        function checkPWAFeatures() {
+            let status = '';
+            
+            // 檢查 Service Worker 支援
+            if ('serviceWorker' in navigator) {
+                status += '<div class="status success">✅ Service Worker 支援正常</div>';
+            } else {
+                status += '<div class="status error">❌ Service Worker 不支援</div>';
+            }
+            
+            // 檢查 Manifest 支援
+            if ('manifest' in document.createElement('link')) {
+                status += '<div class="status success">✅ Web App Manifest 支援正常</div>';
+            } else {
+                status += '<div class="status error">❌ Web App Manifest 不支援</div>';
+            }
+            
+            // 檢查安裝提示支援
+            if ('beforeinstallprompt' in window) {
+                status += '<div class="status success">✅ 安裝提示功能支援正常</div>';
+            } else {
+                status += '<div class="status info">ℹ️ 安裝提示功能需要 HTTPS 或 localhost</div>';
+            }
+            
+            // 檢查離線支援
+            if ('onLine' in navigator) {
+                status += '<div class="status success">✅ 離線檢測功能支援正常</div>';
+            } else {
+                status += '<div class="status error">❌ 離線檢測功能不支援</div>';
+            }
+            
+            // 檢查圖示檔案
+            checkIcons();
+            
+            statusDiv.innerHTML = status;
+        }
+        
+        // 檢查圖示檔案
+        function checkIcons() {
+            const icons = [
+                'icons/icon-16x16.png',
+                'icons/icon-32x32.png',
+                'icons/icon-72x72.png',
+                'icons/icon-96x96.png',
+                'icons/icon-128x128.png',
+                'icons/icon-144x144.png',
+                'icons/icon-152x152.png',
+                'icons/icon-192x192.png',
+                'icons/icon-384x384.png',
+                'icons/icon-512x512.png'
+            ];
+            
+            let iconStatus = '<div class="status info">📱 圖示檔案檢查：</div>';
+            
+            icons.forEach(icon => {
+                const img = new Image();
+                img.onload = () => {
+                    iconStatus += `<div class="status success">✅ ${icon}</div>`;
+                    updateIconStatus();
+                };
+                img.onerror = () => {
+                    iconStatus += `<div class="status error">❌ ${icon} (找不到)</div>`;
+                    updateIconStatus();
+                };
+                img.src = icon;
+            });
+            
+            function updateIconStatus() {
+                const iconStatusDiv = document.createElement('div');
+                iconStatusDiv.innerHTML = iconStatus;
+                statusDiv.appendChild(iconStatusDiv);
+            }
+        }
+        
+        // 頁面載入時檢查
+        document.addEventListener('DOMContentLoaded', checkPWAFeatures);
+        
+        // 註冊 Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker registered successfully');
+                    statusDiv.innerHTML += '<div class="status success">✅ Service Worker 註冊成功</div>';
+                })
+                .catch(error => {
+                    console.log('ServiceWorker registration failed:', error);
+                    statusDiv.innerHTML += '<div class="status error">❌ Service Worker 註冊失敗</div>';
+                });
+        }
+    </script>
+</body>
+</html>

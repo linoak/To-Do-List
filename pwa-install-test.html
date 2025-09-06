@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA 安裝測試</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .install-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+        .install-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+            50% { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+            100% { box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 PWA 安裝測試</h1>
+        
+        <div id="status"></div>
+        
+        <h2>🚀 安裝選項</h2>
+        <button id="installBtn" class="install-btn">📱 安裝APP</button>
+        <button id="manualBtn" class="install-btn">📖 手動安裝說明</button>
+        
+        <h2>🔗 快速連結</h2>
+        <button onclick="window.open('index-pwa.html', '_blank')" class="install-btn">開啟完整PWA</button>
+        <button onclick="window.open('pwa-test.html', '_blank')" class="install-btn">PWA功能測試</button>
+        
+        <h2>📋 安裝條件檢查</h2>
+        <div id="conditions"></div>
+    </div>
+
+    <script>
+        let deferredPrompt;
+        const statusDiv = document.getElementById('status');
+        const conditionsDiv = document.getElementById('conditions');
+        
+        // 檢查安裝條件
+        function checkInstallConditions() {
+            let conditions = '';
+            
+            // 檢查 HTTPS
+            if (location.protocol === 'https:' || location.hostname === 'localhost') {
+                conditions += '<div class="status success">✅ HTTPS 或 localhost</div>';
+            } else {
+                conditions += '<div class="status error">❌ 需要 HTTPS 或 localhost</div>';
+            }
+            
+            // 檢查 Service Worker
+            if ('serviceWorker' in navigator) {
+                conditions += '<div class="status success">✅ Service Worker 支援</div>';
+            } else {
+                conditions += '<div class="status error">❌ Service Worker 不支援</div>';
+            }
+            
+            // 檢查 Manifest
+            if (document.querySelector('link[rel="manifest"]')) {
+                conditions += '<div class="status success">✅ Manifest 檔案</div>';
+            } else {
+                conditions += '<div class="status error">❌ 缺少 Manifest 檔案</div>';
+            }
+            
+            // 檢查安裝提示支援
+            if ('beforeinstallprompt' in window) {
+                conditions += '<div class="status success">✅ 安裝提示支援</div>';
+            } else {
+                conditions += '<div class="status info">ℹ️ 安裝提示需要用戶互動</div>';
+            }
+            
+            conditionsDiv.innerHTML = conditions;
+        }
+        
+        // 監聽安裝提示
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            statusDiv.innerHTML = '<div class="status success">✅ 可以安裝！點擊「安裝APP」按鈕</div>';
+            document.getElementById('installBtn').style.display = 'inline-block';
+        });
+        
+        // 監聽安裝完成
+        window.addEventListener('appinstalled', () => {
+            statusDiv.innerHTML = '<div class="status success">🎉 APP已成功安裝！</div>';
+            document.getElementById('installBtn').style.display = 'none';
+        });
+        
+        // 安裝按鈕點擊
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    statusDiv.innerHTML = '<div class="status success">✅ 用戶接受安裝</div>';
+                } else {
+                    statusDiv.innerHTML = '<div class="status info">ℹ️ 用戶取消安裝</div>';
+                }
+                deferredPrompt = null;
+            } else {
+                showManualInstructions();
+            }
+        });
+        
+        // 手動安裝說明
+        document.getElementById('manualBtn').addEventListener('click', showManualInstructions);
+        
+        function showManualInstructions() {
+            const instructions = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 10000;">
+                    <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%; text-align: center;">
+                        <h3>📱 手動安裝說明</h3>
+                        <div style="text-align: left; margin: 20px 0;">
+                            <h4>Android (Chrome):</h4>
+                            <p>1. 點擊瀏覽器選單 (⋮)</p>
+                            <p>2. 選擇「安裝應用程式」</p>
+                            <p>3. 點擊「安裝」</p>
+                            
+                            <h4>iOS (Safari):</h4>
+                            <p>1. 點擊分享按鈕 (□↑)</p>
+                            <p>2. 選擇「加入主畫面」</p>
+                            <p>3. 點擊「新增」</p>
+                        </div>
+                        <button onclick="this.parentElement.parentElement.remove()" style="background: #667eea; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer;">關閉</button>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', instructions);
+        }
+        
+        // 頁面載入時檢查
+        document.addEventListener('DOMContentLoaded', () => {
+            checkInstallConditions();
+            
+            // 註冊 Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registered successfully');
+                        statusDiv.innerHTML += '<div class="status success">✅ Service Worker 註冊成功</div>';
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
+                        statusDiv.innerHTML += '<div class="status error">❌ Service Worker 註冊失敗</div>';
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

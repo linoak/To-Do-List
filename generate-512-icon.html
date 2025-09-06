@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>生成512x512圖示</title>
+</head>
+<body>
+    <h1>生成512x512圖示</h1>
+    <canvas id="canvas" width="512" height="512" style="border:1px solid #ccc;"></canvas>
+    <br>
+    <button onclick="downloadIcon()">下載圖示</button>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // 背景漸層
+        const gradient = ctx.createLinearGradient(0, 0, 512, 512);
+        gradient.addColorStop(0, '#4CAF50');
+        gradient.addColorStop(1, '#45a049');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 512, 512);
+
+        // 圓角
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 512, 512, 100);
+        ctx.fill();
+
+        // 重置合成模式
+        ctx.globalCompositeOperation = 'source-over';
+
+        // 繪製待辦事項圖示
+        const iconSize = 512 * 0.6;
+        const iconX = (512 - iconSize) / 2;
+        const iconY = (512 - iconSize) / 2;
+
+        // 繪製清單背景
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.fillRect(iconX, iconY, iconSize, iconSize * 0.8);
+
+        // 繪製清單項目
+        ctx.fillStyle = '#4CAF50';
+        const itemHeight = iconSize * 0.15;
+        const itemSpacing = iconSize * 0.05;
+        const startY = iconY + iconSize * 0.1;
+
+        for (let i = 0; i < 3; i++) {
+            const y = startY + i * (itemHeight + itemSpacing);
+            ctx.fillRect(iconX + iconSize * 0.1, y, iconSize * 0.3, itemHeight);
+            ctx.fillRect(iconX + iconSize * 0.5, y, iconSize * 0.35, itemHeight);
+        }
+
+        // 繪製勾選框
+        ctx.strokeStyle = '#4CAF50';
+        ctx.lineWidth = 512 * 0.02;
+        for (let i = 0; i < 3; i++) {
+            const y = startY + i * (itemHeight + itemSpacing) + itemHeight / 2;
+            ctx.beginPath();
+            ctx.arc(iconX + iconSize * 0.05, y, 512 * 0.03, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+
+        // 添加roundRect polyfill
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+
+        function downloadIcon() {
+            const link = document.createElement('a');
+            link.download = 'icon-512x512.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>
