@@ -75,7 +75,7 @@ self.addEventListener('fetch', (event) => {
         ).catch(() => {
           // 網路請求失敗時，嘗試返回預設頁面
           if (event.request.destination === 'document') {
-            return caches.match('./index-pwa.html');
+            return caches.match('./index.html');
           }
         });
       })
@@ -125,7 +125,7 @@ self.addEventListener('notificationclick', (event) => {
 
   if (event.action === 'explore') {
     event.waitUntil(
-      clients.openWindow('./index-pwa.html')
+      clients.openWindow('./index.html')
     );
   }
 });
@@ -135,4 +135,5 @@ function doBackgroundSync() {
   // 這裡可以添加背景同步邏輯
   console.log('Background sync completed');
 }
+
 
